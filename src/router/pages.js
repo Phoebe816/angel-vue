@@ -14,19 +14,13 @@ export default [
   { 
     path:"/shopping", 
     name:'shopping',
-    component:() => import('@/pages/shopping/serverRequest'),
+    component:() => import('@/pages/shopping/Shopping'),
     meta:{homePages:true}
   },
   { 
     path:"/tour", 
     name:'tour',
     component:() => import('@/pages/tour/Tour'),
-    meta:{homePages:true}
-  },
-  { 
-    path:"/amusement", 
-     name:'amusement',
-    component:() => import('@/pages/amusement/Amusement'),
     meta:{homePages:true}
   },
   { 
@@ -38,17 +32,21 @@ export default [
   { 
     path:"/mutualaid", 
      name:'mutualaid',
-    component:() => import('@/pages/mutualaid/Mutualaid'),
+    component:() => import('@/pages/mutualaid/Mutualaid'),    
     meta:{homePages:true}
   },
   { 
-    path:"/game", 
-     name:'game',
-    component:() => import('@/pages/game/Game'),
-    meta:{homePages:true} 
-    // meta:{ title:'天使网小游戏'}
+    path:"/read", 
+     name:'read',
+    component:() => import('@/pages/read/readHome'),
+    meta:{homePages:true}
   },
-  
+  { 
+    path:"/amusement", 
+    name:'amusement',
+    component:() => import('@/pages/amusement/Amusement'),   
+    meta:{homePages:true}
+  }
 ]
 
 

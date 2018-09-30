@@ -5,8 +5,7 @@ import {message} from '@/utils'
 
 export const BASEURL = '/api/'
 
-export function ajax(options){
-	debugger
+export function ajax(options){	
 	let config = {
 		url:options.url,
 		method:options.method || 'get',
@@ -14,7 +13,7 @@ export function ajax(options){
 		data:options.data || {},
 		headers:options.headers || {}
 	}
-	axios.interceptors.response.use((response) => {     //拦截器
+	axios.interceptors.response.use((response) => {     //响应拦截器
 	    if (response.data.errorCode === '401') {
 	      	router.push('/login')
 	      	message({

@@ -29,7 +29,7 @@ Mock.mock(/\/api\/packetInfo/,'get',{
 Mock.mock(/\/api\/dbTime/,'get',{
 	'xData|100':['@datetime'],
 	'series|2':[{
-		'name':'@NAME',   //随机生成常见英文姓名
+		'name':'@NAME',
 		'type':'bar',
 		'stack':'total',
 		'data|100':['@integer(1,600)']

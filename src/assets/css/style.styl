@@ -4,19 +4,27 @@
   &:last-child {
     margin-bottom 0
   }
-}
+}   
 // register
-.register-card{
-  width 60%
-  form{
-    width 60%
-    margin 0 auto
-  }
-  button{
-    float right
-  }
-}
-
+.register-header{
+      height:10rem;         
+      font:normal 3rem SimSun,Arial;
+      .register-tohome{
+          text-decoration: none;
+          font: bold 50px Microsoft Yahei,Arial;
+          color: $--color-gray;  
+          margin-left: 2rem;
+          line-height: 10rem;
+          &:hover{
+            cursor: pointer;
+            color: $--color-gray;
+          }
+     } 
+} 
+.border-dash{
+  border-bottom: 1px dashed $--color-border-1;
+  padding-bottom: 1rem;
+ }
 // pagination
 .el-pagination {
   padding 20px 0 0
@@ -30,6 +38,9 @@
 }
 
 //center
+.horizontal-center{
+  margin: 0 auto;
+}
 .text-center{
   text-align center
 }
@@ -56,7 +67,7 @@
   top 50%
   transform translate(0,-50%)
 }
-.vertical-horizontal{
+.vertical-horizontal{  
   position absolute
   left 50%
   top 50%

@@ -3,20 +3,20 @@
     	v-show="count > 0"
     	background
     	@size-change="changePage('limit',$event)"
-    	@current-change="changePage('curPageIdx',$event)"
-    	:current-page="curPageIdx"
+    	@current-change="changePage('curPageId',$event)"
+    	:current-page="curPageId"
     	:page-sizes="pages"
     	:page-size="limit"
     	:total="count"
 		layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
 </template>
-<script type="ecmascript-6">
+<script>
 export default {
 	data(){
 		return {}
 	},
-	props:{
+	props:{ 
 		pages:{
 			type:Array,
 			default:() => {
@@ -26,7 +26,7 @@ export default {
 		limit:{
 			type:Number
 		},
-		curPageIdx:{
+		curPageId:{
 			type:Number
 		},
 		count:{

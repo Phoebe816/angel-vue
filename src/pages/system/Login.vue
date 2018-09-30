@@ -1,6 +1,9 @@
 <template>
-<el-main class="vertical-horizontal">
-	<div class="login">
+<el-main>
+	<h1 class="register-header text-center">
+        <router-link to="/" title="天使网首页" class="register-tohome ">天使网</router-link>| 用户登录
+    </h1> 
+	<div class="login vertical-horizontal">
 	  	<div class="loginFunc">
 		    <div :class="{loginFuncApp:!activeTab}" @click="toggle">账号密码登录</div>
 		    <div :class="{loginFuncNormal:activeTab}" @click="toggle">手机验证码登录</div>
@@ -17,10 +20,10 @@
 				<el-form-item prop="password">
 					<el-input type="password" v-model="login_pwd.password" placeholder="请输入密码" @keyup.enter.native="onSubmit('login_pwd')"></el-input>
 				</el-form-item>
-				<el-form-item v-if="errorCount > 1 " prop="captchaCode" :rules="rules.required">
+				<!-- <el-form-item prop="captchaCode" :rules="rules.required">
 					<el-input v-model="login_pwd.captchaCode" class="code-input" placeholder="请输入图形验证码"></el-input>
 					<img class="img_valid" @click="rnd = Math.random()" :src="'/api/code/getCaptchaImage?rnd=' + rnd">
-				</el-form-item>
+				</el-form-item> -->
 				<el-form-item>
 					<el-button type="success" size="medium" @click="onSubmit('login_pwd')">登录</el-button>
 				</el-form-item>
@@ -53,9 +56,9 @@
 	</div>
 </el-main>
 </template>
-<script scoped>
+<script>
 import {validator,getVeriCode} from '@/utils'
-import {submitLoginApi,getValidImgApi} from '@/apis'
+import {submitLoginApi,getValidImgApi,getAllMessageApi} from '@/apis'
 import {mapActions} from 'vuex'
 export default {
 	name:'login',
@@ -67,25 +70,31 @@ export default {
 			rules:validator,
 			codeDisabled:false,
 			countdown:60,
-			errorCount:0,
 			rnd:0
 		}
 	},
 	methods:{
-		...mapActions(['UserLogin']),
+		...mapActions(['UserLogin','ChangeShopCart','ChangeMessageNum']),
 		onSubmit(formName){
+			this.disabled = true
 			this.$refs[formName].validate((valid) => {
 				if(valid){
 					let url = formName === 'login_pwd' ? 'pwdLogin' : 'smsLogin';
 					let params = formName === 'login_pwd' ? this.login_pwd : this.login_code;
 					submitLoginApi(url,params).then((res)=>{
 						if(res.status === 200){
+							this.disabled = false;
 							let _data = res.data;
 							if(_data.success === true){
 								this.UserLogin(_data.operateCallBackObj);
-								this.$router.push('/homePage');
+								this.$router.push('/');
+								getAllMessageApi().then(res => {
+									if(res.status === 200){
+										this.ChangeShopCart(res.data.cart)
+										this.ChangeMessageNum(res.data.messages.length)
+									}
+								})
 							}else{
-								this.errorCount = _data.errorCount;
 								this.$message({
 									message:_data.operateMessage,
 									type:'error'
@@ -107,9 +116,18 @@ export default {
 </script>
 <style scoped lang="stylus" rel="stylesheet">
 @import '../../assets/css/index.styl'
+.register-header{
+	position absolute
+	top 15%
+	left 50%
+	transform translate(-50%, -50%)
+}
+.login{
+	background-color: $--background-color-base
+}
 .login_card{
 	width 360px
-	padding 30px
+	padding 30px	
 	button{
 		float right
 	}
@@ -127,6 +145,9 @@ export default {
 	font-size 14px
 	.resetPassword{
 		float right
+	}
+	a{
+		color $--color-ablue
 	}
 }
 .login{

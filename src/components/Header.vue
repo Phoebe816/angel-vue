@@ -1,19 +1,21 @@
 <template>
   <el-header height="48px">
     <div class="header-cloud">
-      <img class="logoImage" src="../assets/logo.png" height="48">
+      <router-link :to="'/'" title="天使网首页">
+       <img class="logoImage" src="@/assets/angel1.png" height="48">
+      </router-link>
+      <span>天使网</span>
     </div>
     <div class="header-menu">
-      <div v-if="userInfo && userInfo.roleName === 'user'">
+      <div><!-- v-if="userInfo && userInfo.roleName === 'user'" -->
         <el-badge :value="shopCartNum" class="item2 myBadge" :hidden="shopCartNum === 0">
           <router-link :to="'/shopCart'" tag="span" :style="{color:'#fff'}">
-            <i class="messageStyle iconfont icon-gouwuche"></i>
+            <i class="iconfont icon-icon-gouwuche"></i>
             <span class="messageText">购物车</span>
           </router-link>
         </el-badge>
       </div>
-
-      <div v-if="userInfo && userInfo.roleName === 'user'">
+      <div>
         <el-popover
           popper-class="messagePopper"
           placement="bottom"
@@ -41,24 +43,17 @@
           </el-badge>
         </el-popover>
       </div>
-
       <el-dropdown
         @command="handleCommand"
         class="header-menu-user"
         trigger="click">
         <span class="el-dropdown-link">
-          <i class="messageStyle iconfont icon-user"></i>
-          <span class="messageText">{{userInfo ? (userInfo.account ? userInfo.account : userInfo.phoneNum) : ""}}</span>
+          <i class="messageStyle iconfont icon-icon"></i>
+          <span class="messageText">{{userInfo.account ? userInfo.account : userInfo.phoneNum}}</span>
         </span>
         <el-dropdown-menu slot="dropdown">
           <router-link :to="'/userInfo'">
             <el-dropdown-item>个人信息</el-dropdown-item>
-          </router-link>
-          <router-link :to="'/userList'" v-if="userInfo && userInfo.roleName === 'dba'">
-            <el-dropdown-item>用户列表</el-dropdown-item>
-          </router-link>
-          <router-link :to="'/account'" v-if="userInfo && userInfo.roleName === 'sys'">
-            <el-dropdown-item>添加账户</el-dropdown-item>
           </router-link>
           <el-dropdown-item command="exit">退出</el-dropdown-item>
         </el-dropdown-menu>
@@ -105,6 +100,7 @@ export default{
         if(res.status === 200){
           this.messageData = res.data.messages
           this.ChangeShopCart(res.data.cart)
+          debugger
         }
       })
     },
@@ -128,21 +124,25 @@ export default{
   color $--color-white
   background-color $--background-color-header
 }
-
 .header-cloud {
+  height 100%
+  width 20%  
+  vertical-align middle
   display inline-block
-  & i {
-    font-size 40px
-    line-height 48px
+  .logoImage{  
+    height 100%
+    margin-right 0.2%
+    margin-top -3%
     vertical-align middle
   }
+  & span{
+    font-size 18px
+    vertical-align middle 
+    display inline-block  
+    height 100%
+    line-height 48px 
+  }
 }
-
-.logoImage{
-  margin-left 12px
-  vertical-align middle
-}
-
 .header-menu {
   float right
   height 48px
@@ -152,6 +152,10 @@ export default{
     vertical-align middle
     height inherit
     padding-left 16px
+  }
+  & i{   
+    vertical-align middle
+    cursor pointer
   }
 }
 
@@ -164,13 +168,6 @@ export default{
   }
 }
 
-.messageStyle{
-  line-height 48px
-  vertical-align middle
-  &:hover{
-    cursor pointer
-  }
-}
 .messageText{
   line-height 48px
   font-size 12px

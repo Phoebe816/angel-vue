@@ -13,6 +13,17 @@ const validPhone = (rule, value, callback) => {
 	  	callback()
 	}
 }
+//定义name验证
+const validName = (rule, value, callback) => {
+	const reg = /^[a-zA-Z][0-9a-zA-Z\_]{0,19}$/;
+	if (!value){
+	  	callback(new Error('请输入用户名'))
+	}else  if (!reg.test(value)){
+		callback(new Error('请以字母或下划线开头且不超过19个字符'))
+	}else {
+	  	callback()
+	}
+}
 //定义password验证
 const validPassword = (rule, value, callback) => {
 	const reg = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,10}$/;
@@ -68,6 +79,11 @@ export const validator = {
 	number:{
 		required:true,
 		validator:validNumber,
+		trigger:['blur','change']
+	},
+	userName:{
+		required:true,
+		validator:validName,
 		trigger:['blur','change']
 	}
 }

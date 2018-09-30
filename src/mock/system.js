@@ -1,11 +1,19 @@
 const Mock = require("mockjs")
-const Random = Mock.Random;   //用于生成各种类型的数据。 
-//Mock.Random的方法在模板数据中被称为占位符
+const Random = Mock.Random;
 
-Mock.mock('/api/pwdLogin','post',{
-	'operateMessage|1':['手机号不存在','密码错误'],   // 'name1|1':arr,  从数组里随机取出1个值
-	'success|1':[true]               
+Mock.mock('/api/pwdLogin','post',function(options){
+	return Mock.mock({
+        "operateCallBackObj|1": [{
+            'account': '@cname',
+            'id|+1': 88,            
+            'phoneNum|1':['18086011561'],
+			'password|1':['123456hua']			
+        }],
+        'operateMessage|1':['手机号不存在','密码错误'],
+		'success|1':[true]
+    });
 })
+
 
 Mock.mock('/api/smsLogin','post',{
 	'operateMessage|1':['手机号不存在','验证码错误'],
@@ -22,18 +30,20 @@ Mock.mock(/\/api\/code\/getSmsCode/,'get',{
 })
 
 Mock.mock('/api/loginout','get',{
-	'operateMessage|1':['登出成功','登出失败'],
-	'success|1':[true,false]
+	'operateMessage|1':['登出成功'],
+	'success|1':[true]
 })
 
 Mock.mock('/api/user/register','post',{
-	'operateMessage|1':['验证码错误','注册成功','注册失败'],
-	'success|1':[true,false]
+	'operateMessage|1':['注册成功'],
+	'failMessage|1':['注册失败'],
+	'success|1':[true]
 })
 
 Mock.mock('/api/user/perfectInfo','post',{
-	'operateMessage|1':['保存成功','保存失败'],
-	'success|1':[true,false]
+	'operateMessage|1':['保存成功'],
+	'failMessage|1':['保存失败'],
+	'success|1':[true]
 })
 
 Mock.mock(/\/api\/findRemoteDbinfos/,'get',{
@@ -58,4 +68,33 @@ Mock.mock('/api/user/getHomepageOverview','get',{
 		'type':'@integer(0,2)',
 		'info|1':['orderinfo','dbinfo','reptinfo','revwinfo','srinfo','docinfo','consinfo','remoinfo','continfo']
 	}]
+})
+
+Mock.mock('/api/findUserMessages','get',{
+		'cart':'@integer(1,5)',
+		'messages|1-4':['orderinfo','dbinfo','reptinfo','revwinfo'],
+		'account': '@cname',
+        'id|+1': 88,          
+		'phoneNum|1':['18086011561'],
+		'operateMessage|1':['登录成功'],
+		'success|1':[true]
+})
+
+Mock.mock(/\/api\/sr/,'get',{
+		'list|1-20':[{
+		'author':'@NAME',
+		'title':'@NAME',
+		'schedule|1':['已读完','第10章','第20章','第30章'],
+		'newsection|1':['2.2.1','2.2.3','2.2.2'],
+		'updatetime':'@now'
+	}]
+})
+
+Mock.mock('/api/sr/instSr','post', function(options){
+	return Mock.mock({
+        "user|1-3": [{
+            'name': '@cname',
+            'id|+1': 88
+        }]
+    });
 })

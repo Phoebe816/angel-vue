@@ -1,18 +1,17 @@
 <template>
-  <el-aside width="auto">
-	<div class="el-menu-toggle" @click="toggleMenu">
-	  <i class="iconfont icon-menu"></i>
-	</div>	   
+  <el-aside class="hidescroll" width="auto">
+  	<div class="el-menu-toggle" @click="toggleMenu">
+  	  <i class="iconfont icon-menu"></i>
+  	</div>
     <el-menu 
-	  default-active="activeIndex" 
-	  class="el-menu-vertical" 
-	  @open="handleOpen" 
-	  @close="handleClose" 
-	  :collapse="isCollapse"
+	  default-active="readHome" 
+	  class="el-menu-vertical" 	  
+	  :collapse="openMenu"
 	  background-color="#364150"
-  	  text-color="#fff"          
-      unique-opened>
-      <el-menu-item index="homePage" :route="{path:'/homePage'}>
+    router
+  	text-color="#fff"          
+    unique-opened>
+      <el-menu-item index="read">
         <i class="iconfont icon-home"></i>
         <span slot="title">首页</span>
       </el-menu-item>
@@ -20,9 +19,9 @@
         <i class="iconfont icon-dingdanguanli"></i>
         <span slot="title">订单管理</span>
       </el-menu-item>
-      <el-menu-item index="3">
+      <el-menu-item index="bookshelf">
         <i class="iconfont icon-database"></i>
-        <span slot="title">数据库管理</span>
+        <span slot="title">我的书架</span>
       </el-menu-item>
       <el-submenu index="cloud">
         <template slot="title">
@@ -42,7 +41,7 @@
           	<i class="iconfont icon-cloud"></i>
           	<span>选项3</span>
       	  </el-menu-item>
-          <el-menu-item index="serverRequest" :route="{path:'/serverRequest'}" >
+          <el-menu-item index="submitSR">
           	<i class="iconfont icon-tijiao"></i>
           	<span>提交SR</span>
           </el-menu-item>
@@ -60,15 +59,15 @@
         <i class="iconfont icon-gongju"></i>
         <span slot="title">工具脚本</span>
       </el-menu-item>	     
-	</el-menu>  	
+  	</el-menu>    	
   </el-aside>
 </template>
-<script type="ecmascript-6">
+<script>
 export default {
 	name:"Menu",
 	data(){
 		return {
-			openMenu:false
+			openMenu:false      
 		}
 	},
 	computed:{
@@ -86,6 +85,9 @@ export default {
 </script>
 <style scoped lang="stylus" rel="stylesheet/stylus">
   @import '../assets/css/index.styl'
+  .hidescroll::-webkit-scrollbar{
+    display none
+  }
   .el-aside {
     background-color $--background-color-menu
   }
@@ -102,7 +104,6 @@ export default {
       display inline-block
     }
   }
-
   .el-menu {
     border-right none
     background-color $--background-color-menu

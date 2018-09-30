@@ -8,7 +8,7 @@ import qs from 'qs'
 export const submitLoginApi = (url,params = {}) => ajax({
 	url:BASEURL + url,
 	method:'post',
-	data:qs.stringify(params),
+	data:params,
 	headers:{'Content-Type':'application/x-www-form-urlencoded'}
 })
 
@@ -23,6 +23,9 @@ export const getVeriCodeApi = (phone,validPhone) => ajax({
 
 //验证手机号是否存在
 export const veriPhoneApi = (phone) => ajax({url:BASEURL + 'user/verifiedPhoneNum', params:{phoneNum:phone}})
+
+//验证用户名是否存在
+export const veriUserName = (username) => ajax({url:BASEURL + 'user/verifiedPhoneNum', params:{userName:username}})
 
 //登出api
 export const loginOutApi = () => ajax({url:BASEURL + 'loginout'})

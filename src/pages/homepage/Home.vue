@@ -1,40 +1,47 @@
 <!-- 1、模板 -->
 <template>
-  <div id="home" class="home">      
-    <photowall></photowall>    
-  </div>
+  <el-main style="margin-top:40px">    
+    <el-container>
+      <el-aside width="150px">
+        <homemenu></homemenu>
+      </el-aside>
+      <el-main style="padding: 0 50px;">
+        <carousel></carousel>
+      </el-main>
+    </el-container> 
+    <photowall></photowall>
+    <el-container>
+    </el-container>
+  </el-main>
 </template>
 <!-- 2、行为：处理逻辑 -->
 
 <script>
+import Homemenu from './Homemenu'
 import Photowall from './Photowall'
+import Carousel from './Carousel'
 
 export default {
   name: 'home',
   data(){
     return {
-         /* navLists:[
-          {name:"首页"},
-          {name:"孕育"},
-          {name:"工作"},
-          {name:"购物"},
-          {name:"旅游"},
-          {name:"娱乐"},
-          {name:"健身"},
-          {name:"学习"},
-          {name:"互助"}
-          ]*/
+        
       }
     },
   components:{
-    "photowall":Photowall
+    "homemenu":Homemenu,
+    "photowall":Photowall,
+    "carousel":Carousel
    
   }
  
 }
 </script>
 <!-- 3、样式：解决样式 -->
-<style>
-
+<style scoped lang="stylus" rel="stylesheet">
+@import '../../assets/css/index.styl'
+.el-main{
+  padding 20px 50px;
+}
 </style>
 
