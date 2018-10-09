@@ -45,9 +45,13 @@
 		</div>
 		<!-- 轨道 -->
 		<div class="track-container">
-			<trackc v-for="(item, index) in trackNum" :key="item.order" :track="item" :width="trackwidth"
-					@showRightMenu="showRightMenu" :rightNavshow="rightNavNum === item.order"
-					@clickRightMenu="clickRightMenu" :rightmenu="rightmenu"></trackc>	
+			<trackc v-for="(item, index) in trackNum" :key="item.order" 
+					:track="item" 
+					:width="trackwidth"
+					@showRightMenu="showRightMenu" 
+					:rightNavshow="rightNavNum === item.order"
+					@clickRightMenu="clickRightMenu" 
+					:rightmenu="rightmenu"></trackc>	
 			<div class="dragArea" id="dragArea">	
 				<videoimg v-for="(item, index) in videolist" :key='item.time + index' 
 					@selectVideo="selectVideo(index)" @resize="resize" @dragstart="dragstart"
@@ -70,16 +74,20 @@ export default {
   		imgtop: 0,
   		trackNum: [{
   			order: 1,
-  			name: "Track 1"
+  			name: "Track 1",
+  			ismask: false
   		},{
   			order: 2,
-  			name: "Track 2"
+  			name: "Track 2",
+  			ismask: false
   		},{
   			order: 3,
-  			name: "Track 3"
+  			name: "Track 3",
+  			ismask: false
   		},{
   		  	order: 4,
-  			name: "Track 4"
+  			name: "Track 4",
+  			ismask: false
   		}],  					
   		videolist: [],
   		time: 0,
@@ -144,10 +152,10 @@ export default {
   		this.rightNavNum = order;  
   		let oTarget = document.getElementById('dragArea');
   		this.rightmenu.left = e.clientX;
-  		this.rightmenu.top = e.clientY - oTarget.getBoundingClientRect().top;	
+  		this.rightmenu.top = e.clientY - oTarget.getBoundingClientRect().top - (order-1)*this.trackHight;	
   		document.onclick = (e)=>{    
         	this.rightNavNum = 0;
-        	this.rightmenu.left = this.rightmenu.top = 0;        	
+        	this.rightmenu.left = 0;        	
       };	
   	},
   	clickRightMenu (track, btn, e) {
@@ -157,7 +165,8 @@ export default {
 		  			newname = "Track " + neworder,
 		  			newtrack = {
 			  			order: neworder,
-			  			name: newname
+			  			name: newname,
+			  			ismask: false
 			  		}
 			  	this.trackNum.splice(track.order-1, 0, newtrack);
   			}
@@ -167,7 +176,8 @@ export default {
 		  			newname = "Track " + neworder,
 		  			newtrack = {
 			  			order: neworder,
-			  			name: newname
+			  			name: newname,
+			  			ismask: false
 			  		}
 			  	this.trackNum.splice(track.order, 0, newtrack);
   			}
@@ -194,7 +204,7 @@ export default {
   			}
   			break;
   			case 4: {
-
+  				track.ismask = true;
   			}
   			break;
   			case 5: {
@@ -202,13 +212,15 @@ export default {
   			}
   			break;
   		}
+  		this.rightNavNum = 0;
   	},
   	trackAdd () {
   		let neworder = this.trackNum.length + 1,
   			newname = "Track " + neworder,
   			newtrack = {
 	  			order: neworder,
-	  			name: newname
+	  			name: newname,
+	  			ismask: false
 	  		}
 	  	this.trackNum.push(newtrack);
   	},
@@ -328,17 +340,6 @@ export default {
   		this.videolist.splice(index, 1, origin);
   		this.videolist.splice(index+1, 0, addData);
   	},
-  	/*addVideoimg(data){
-  		let newdata = {...data, width: 0, left: 0, top: 0},
-  		    len = this.videolist.length;
-  		newdata.width = (data.time/this.trans)*this.tickSize;
-  		for (let i = 0; i < len; i++) {
-  			newdata.left += this.videolist[i].width;
-  		}
-  		this.videolist.push(newdata);
-  		this.$forceUpdate();
-  		console.log(this.videolist);
-    },*/
   	canvasclick(e){
   		this.sliderLeft = e.offsetX;
   		this.sliderRun();

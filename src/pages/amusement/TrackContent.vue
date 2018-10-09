@@ -23,6 +23,7 @@
 				<div class="resizable-handle resizable-w" @mousedown="resize(index, w)"></div>
 			</div> -->
 	</div>
+	<div class="track_mask" v-if="track.ismask"></div>
 </div>
 </template>
 <script>
@@ -102,6 +103,7 @@ export default {
 		border-radius: 8px;
 		border: 1px solid #4B92AD;
 		display: flex;
+		position: relative;
 	}
 	.track_name {
 	    width: 140px;
@@ -167,6 +169,18 @@ export default {
 	    flex: auto;
 	    position: relative;
 	    font-size: 9pt;
+	}
+	.track_mask{
+		width: calc(100% - 140px);
+	    background-color: rgba(0,0,0,0);
+	    border-top-right-radius: 8px;
+		border-bottom-right-radius: 8px;
+	    height: 100%;
+	    flex: auto;
+	    position: absolute;
+	    left: 140px;
+	    top: 0;
+	    z-index: 99999;
 	}
 
 </style>
