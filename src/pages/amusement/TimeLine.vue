@@ -204,7 +204,7 @@ export default {
   			}
   			break;
   			case 4: {
-  				track.ismask = true;
+  				track.ismask = !track.ismask;
   			}
   			break;
   			case 5: {
