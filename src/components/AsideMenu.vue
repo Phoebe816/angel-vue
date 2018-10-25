@@ -5,7 +5,6 @@
       active-text-color="#ffd04b"
       router
       :collapse="isCollapse"
-      :default-openeds=item.index
       @select="handleSelect" v-for="(item, index) of navlist" :key="index">      
       <el-submenu :index="item.index" >
        <template slot="title">

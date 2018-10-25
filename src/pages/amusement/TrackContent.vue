@@ -1,28 +1,17 @@
 <template>
-<div class="track" :style="'width:'+width+'px;'">
+<div class="track">
 	<div class="track_name" @contextmenu.prevent="showRightMenu(track.order, $event)">
 		<div class="track_top">
 			<div class="track_menu" ></div>
 			<div class="track_label">{{ track.name }}</div> 
 		</div>
-		<ul class="rightlist" ref="rightNav" v-if="rightNavshow" :style="'top:'+rightmenu.top+'px;left:'+rightmenu.left+'px;'">
+		<ul class="rightlist" ref="rightNav" v-if="rightNavshow" :style="rightmenu.top+'px;left:'+rightmenu.left+'px;'">
 			<li @click.stop.prevent = "clickRightMenu(track, item.order, $event)" v-for="(item, index) in rightlist">
 				<i class="iconfont" :class="item.class"></i><span>{{ item.nav }}</span>
 			</li>
 		</ul>
 	</div>
-	<div class="track_container">
-			<!-- <div class="videobar" :style="'width:'+ item.width+'px;left:'+ item.left+'px;'"
-				v-for="(item, index) in videoNum" :key="index">
-				<div class="clip_top">
-					<div class="track_menu"></div>
-					<div class="clip_title" :title="item.title">{{ item.title }}</div>
-				</div>
-				<img :src="item.address" :alt="item.altname">
-				<div class="resizable-handle resizable-e" @mousedown="resize(index, l)"></div>
-				<div class="resizable-handle resizable-w" @mousedown="resize(index, w)"></div>
-			</div> -->
-	</div>
+	
 	<div class="track_mask" v-if="track.ismask"></div>
 </div>
 </template>
@@ -98,10 +87,7 @@ export default {
 	}
 	.track{
 		height: 64px;
-		margin-bottom: 8px;
-		box-shadow: 0px 0px 10px #000;
-		border-radius: 8px;
-		border: 1px solid #4B92AD;
+		margin-bottom: 8px;			
 		display: flex;
 		position: relative;
 	}
@@ -112,8 +98,13 @@ export default {
 	    font-size: 9pt;
 	    background-color: #000;    
 		flex: none;	
+		box-shadow: 0px 0px 10px #000;
 		border-top-left-radius: 8px;
 	    border-bottom-left-radius: 8px;
+		border-top: 1px solid #4B92AD;
+		border-bottom: 1px solid #4B92AD;
+		border-left: 1px solid #4B92AD;
+		box-sizing :border-box;
 	    .track_top {
 		    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.20)), color-stop(100%,rgba(255,255,255,0)));
 		    border-top-left-radius: 8px;
@@ -159,17 +150,7 @@ export default {
 	    	background: url('../../assets/menu_hover.png') center;
 	    }
 	}
-	.track_container{
-		width: calc(100% - 140px);
-	    background-color: #000;
-	    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(50,50,50,1)), color-stop(100%,rgba(6,6,6,1)));
-	    border-top-right-radius: 8px;
-		border-bottom-right-radius: 8px;
-	    height: 100%;
-	    flex: auto;
-	    position: relative;
-	    font-size: 9pt;
-	}
+
 	.track_mask{
 		width: calc(100% - 140px);
 	    background-color: rgba(0,0,0,0);

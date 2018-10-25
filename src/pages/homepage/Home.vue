@@ -6,7 +6,7 @@
         <homemenu></homemenu>
       </el-aside>
       <el-main style="padding: 0 50px;">
-        <carousel></carousel>
+        
       </el-main>
     </el-container> 
     <photowall></photowall>
@@ -19,7 +19,6 @@
 <script>
 import Homemenu from './Homemenu'
 import Photowall from './Photowall'
-import Carousel from './Carousel'
 
 export default {
   name: 'home',
@@ -30,8 +29,7 @@ export default {
     },
   components:{
     "homemenu":Homemenu,
-    "photowall":Photowall,
-    "carousel":Carousel
+    "photowall":Photowall
    
   }
  

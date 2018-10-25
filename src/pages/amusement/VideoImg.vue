@@ -57,6 +57,7 @@ export default {
     box-shadow: 0px 0px 10px #000;
     opacity: 0.95;
     box-sizing: border-box;
+	overflow: hidden;
     .clip_top {
 	    display: -webkit-flex;
 	    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0.20)), color-stop(100%,rgba(255,255,255,0)));

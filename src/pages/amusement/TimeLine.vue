@@ -3,7 +3,7 @@
 <div class="videocontainer">
         <div v-for="(item, index) in videoimg" class="video-img" @mousedown.prevent="imgmove(index, item, $event)"
         	:class="{ selectImg: index === moveimg }">
-           <img :src="item.address" :alt="item.altname" />
+           <img :src="item.address" :alt="item.altname" class="bigimg" />
            <h4>{{ item.title }}</h4>
            <img v-if="index === moveimg" :src="item.address" :alt="item.altname" 
            		:style="'left:'+imgleft+'px;top:'+imgtop+'px;'" class="moveimg" ref="moveImg" />
@@ -24,7 +24,7 @@
 		<button class="nonebtn" @click="deletevideo">
 			<i class="iconfont icon-bluedelete"></i>
 		</button>
-		<el-slider v-model="sliderSec"></el-slider>
+		<el-slider v-model="sliderSec" :min="1" :max="800" @change="drawRuler"></el-slider>
 		<span>{{sliderSec}}秒</span>
 	</div>
 	<div class="timelinebody">
@@ -34,8 +34,7 @@
 				<div id="ruler_time" class="ng-binding">{{ sectime }}</div>
 			</div>
 			<div class="slider">			
-				<canvas id="ruler" :width="rulerWidth" :height="rulerHight" 
-					@click="canvasclick"></canvas>
+				
 				<!-- 滑块线 -->
 			    <div id="slider" class="slider_runway">
 			        <div  class="playhead-top"></div>
@@ -44,21 +43,28 @@
 			</div>
 		</div>
 		<!-- 轨道 -->
-		<div class="track-container">
-			<trackc v-for="(item, index) in trackNum" :key="item.order" 
-					:track="item" 
-					:width="trackwidth"
-					@showRightMenu="showRightMenu" 
-					:rightNavshow="rightNavNum === item.order"
-					@clickRightMenu="clickRightMenu" 
-					:rightmenu="rightmenu"></trackc>	
-			<div class="dragArea" id="dragArea">	
+		
+		<trackc v-for="(item, index) in trackNum" :key="item.order" 
+				:track="item" 
+				@showRightMenu="showRightMenu" 
+				:rightNavshow="rightNavNum === item.order"
+				@clickRightMenu="clickRightMenu" 
+				:rightmenu="rightmenu"></trackc>				
+		<div class="track-ruler-container">
+			<canvas id="ruler" :width="rulerWidth" :height="rulerHight" style="margin-bottom:3px;"
+					@click="canvasclick"></canvas>	
+			<div class="dragArea" id="dragArea" :style="{ width: trackwidth + 8 + 'px'}">
+				<div class="track_container" 
+					v-for="(item, index) in trackNum"
+					:style="{ width: trackwidth + 'px'}">
+				</div>
 				<videoimg v-for="(item, index) in videolist" :key='item.time + index' 
 					@selectVideo="selectVideo(index)" @resize="resize" @dragstart="dragstart"
 					:videoNum="item" :class="{selectedred: index == current}">				
 				</videoimg>	
-			</div>		
+			</div>
 		</div>		
+	
     </div>	
 </div>
 </div>
@@ -91,21 +97,19 @@ export default {
   		}],  					
   		videolist: [],
   		time: 0,
-  		trans: 8, //一个刻度代表多少秒
-  		tickSize: 30, //一个刻度代表多少px
+  		tickSize: 35, //一个刻度代表多少px
   		// sectime: "",
-  		rulerWidth: 1424,
   		rulerHight: 42,
   		sliderLeft: 0,  //红线的left
   		current: -1,
   		moveimg: -1,
-  		trackHight: 74,
+  		trackHight: 72,
   		rightNavNum: 0,
   		rightmenu: {
   			top: 0,
   			left: 0
   		},
-  		sliderSec: 1
+  		sliderSec: 1 //一个刻度代表多少秒
   	}
   },
   props: {
@@ -118,12 +122,17 @@ export default {
   	"videoimg": VideoImg
   },
   computed: {
+	    rulerWidth () {
+			let w = Math.ceil((600/this.sliderSec)*this.tickSize)+5,
+				mw = w>1200?w:1200
+			return mw;
+		},
 	  	sectime () {
 	  		let text = this.secondsToTime(this.time);
 			return [text.hour, text.min, text.sec, text.frame].join(":");
 	  	},
 	  	trackwidth () {
-	  		return this.rulerWidth +100;
+	  		return this.rulerWidth - 2;
 	  	},
 	  	dragAreaHeight () {
 	  		return (this.trackNum.length - 1) * this.trackHight
@@ -146,9 +155,17 @@ export default {
 			}		
 		}*/
   },
+  watch: {
+	  sliderSec: function (newsliderSec, oldsliderSec) {
+		this.sliderSec = newsliderSec;
+		this.videolist.forEach(item => {
+			item.width = (item.time/this.sliderSec)*this.tickSize;
+		});
+        this.drawRuler();
+      }
+  },
   methods: {
   	showRightMenu (order, e) {
-  		debugger
   		this.rightNavNum = order;  
   		let oTarget = document.getElementById('dragArea');
   		this.rightmenu.left = e.clientX;
@@ -244,9 +261,10 @@ export default {
       		newdata = {...item, width: 0, left: 0, top: 0},
       		topLimit = e.clientY - oTarget.getBoundingClientRect().top,//getBoundingClientRect用于获取某个元素相对于视窗的位置集合。
       		bottomLimit = this.dragAreaHeight,   //放到最下面一个轨道的top值
-      		i = Math.round(topLimit/this.trackHight);  //在第几个轨道上
+			  i = Math.round(topLimit/this.trackHight);  //在第几个轨道上
+		debugger
       	if (topLimit >= 0) {
-      		newdata.width = (item.time/this.trans)*this.tickSize;
+      		newdata.width = (item.time/this.sliderSec)*this.tickSize;
   			newdata.left = e.clientX - oTarget.getBoundingClientRect().left;
   			newdata.top = topLimit > bottomLimit ? bottomLimit : this.trackHight*i;
   			this.videolist.push(newdata);
@@ -257,7 +275,6 @@ export default {
       };
     }, 
   	resize (data, direct, e) {
-      	debugger
     	let disR = e.clientX - data.width, //右边拖动
     		disX = e.clientX + data.width, 
     		disL = e.clientX - data.left;
@@ -279,7 +296,6 @@ export default {
     },
     dragstart (data, e) {
     	let self = this;
-    	debugger
     	let top = e.clientY - data.top,
     		left = e.clientX - data.left;
     	document.onmousemove = (e)=>{    
@@ -311,7 +327,6 @@ export default {
   		this.current = -1;
   	},
   	cutvideo () {
-  		debugger
   		let index = this.current;
   		if (index < 0) {
   			this.$message({
@@ -347,7 +362,7 @@ export default {
   	sliderRun(){
   		let x = this.sliderLeft,
   			slider = document.getElementById("slider");
-  		this.time = x*this.trans/this.tickSize;
+  		this.time = x*this.sliderSec/(this.tickSize*2);
   		slider.style.left = x + 'px';
   	},
   	secondsToTime(secs){
@@ -385,7 +400,7 @@ export default {
 		    longLine = Math.floor(h/2),
 		    scaleh = Math.floor(h/3),
 		    tickSize = this.tickSize,
-		    ratio = Math.floor(w / tickSize);
+		    ratio = w / tickSize;
 		c.clearRect(0, 0, w, h);
 		c.strokeStyle = '#ccc';
 		c.fillStyle = '#ccc';
@@ -393,7 +408,7 @@ export default {
 		c.font="12px Arial";
 		for (let i = 0; i < ratio; i++) {			
 			if (i%2===0) {
-				let sec = this.trans*i,
+				let sec = this.sliderSec*i/2,
 					s = this.timetext(sec, 3),
 					x = 0 + tickSize * i;
 				c.moveTo(x, h);
@@ -417,6 +432,15 @@ export default {
 </script>
 <style scoped lang="stylus" rel="stylesheet">
 	@import '../../assets/css/index.styl'
+	::-webkit-scrollbar {
+	    width: 6px;
+	    height: 6px;
+	    background: #000000;
+	}
+	::-webkit-scrollbar-thumb{
+		background: #4b92ad;
+		border-radius: 8px;
+	}
 	.videocontainer{
 	  height: 250px;
 	  border: 3px solid #000;
@@ -431,13 +455,15 @@ export default {
 	    position: relative;
 	    display: inline-block;
 	    margin: 5px;
-	    img{
+	    .bigimg{
 	      width: 100%;
 	      height: 120px;
 	    }
 	    .moveimg{
 	    	position: absolute;
 	    	z-index:9999;
+			width : 60px;
+			height: 32px;
 	    }
 	    h4{
 	      margin: 0;
@@ -495,7 +521,43 @@ export default {
 		.timelinebody{
 			padding: 0 5px;
 			height: calc(100% - 30px);
-			overflow: auto;
+			overflow: hidden;
+			box-sizing: border-box;
+			position: relative;
+			.track-ruler-container{
+				position: absolute;
+				top: 0;
+				left: 145px;
+				height: calc(100% - 5px);
+				width: calc(100% - 155px);
+				overflow : scroll;				
+				.dragArea{
+					height : auto ;
+					position: relative;
+					.selectedred{
+						border-left: 2px solid red!important;
+						border-right: 2px solid red!important;
+						z-index: 9990;
+					}
+					.track_container{
+						background-color: #000;
+						background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(50,50,50,1)), color-stop(100%,rgba(6,6,6,1)));
+						border-top-right-radius: 8px;
+						border-bottom-right-radius: 8px;
+						height: 100%;
+						flex: auto;
+						position: relative;
+						font-size: 9pt;
+						height: 64px;
+						border-top: 1px solid #4b92ad;
+						border-bottom: 1px solid #4b92ad;
+						border-right: 1px solid #4b92ad;
+						box-sizing :border-box;
+						margin-bottom: 8px;					
+					}
+				}
+				
+			}
 		}
 	}
 	.ruler-control{
@@ -540,23 +602,9 @@ export default {
 			}
 		}
 	}
-	.track-container{
-		position: relative;
-		.dragArea{
-			position: absolute;
-			height: 100%;
-			top: 1px;
-			left: 140px;
-			.selectedred{
-				border-left: 2px solid red!important;
-			    border-right: 2px solid red!important;
-			    z-index: 9990;
-			}
-		}
-	}
-	::-webkit-scrollbar {
-	    width: 6px;
-	    height: 6px;
-	    background: #000000;
-	}
+	
+	
+
+
+ 
 </style>
