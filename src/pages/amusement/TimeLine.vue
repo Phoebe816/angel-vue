@@ -493,16 +493,17 @@ export default {
   		}
   		let	x = this.sliderLeft,
   			origin = this.videolist[index],
-  			newwidth = x - origin.left,
-  			addwidth = origin.width - newwidth,
-  			addData = {...origin};  
-  		if ( newwidth <= 0) {
+  			newwidth = x - origin.left;
+  			 
+  		if ( newwidth <= 0 || newwidth >= origin.width ) {
   			this.$message({
-	          message: '请移动标尺到需要剪切的地方',
+	          message: '标尺不在剪切范围内',
 	          type: 'warning'
 	        });
 	        return
-  		}		
+		  }	
+		let addwidth = origin.width - newwidth,
+  			addData = {...origin}; 	
   		origin.width = newwidth;
   		origin.time = (newwidth/this.tickSize)*this.trans;
   		addData.left = x;
