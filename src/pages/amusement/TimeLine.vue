@@ -1,85 +1,91 @@
 <template>
 <div>
-<div class="videocontainer">
-        <div v-for="(item, index) in videoimg" class="video-img" @mousedown.prevent="imgmove(index, item, $event)"
-        	:class="{ selectImg: index === moveimg }">
-           <img :src="item.address" :alt="item.altname" class="bigimg" />
-           <h4>{{ item.title }}</h4>
-           <img v-if="index === moveimg" :src="item.address" :alt="item.altname" :class="{cursorTo: index === moveimg && upAllowed}"
-           		:style="'left:'+imgleft+'px;top:'+imgtop+'px;'" class="moveimg" ref="moveImg" />
-        </div>
-      <!-- </draggable> -->
-</div>
-<div class="cut-tool">
-	<div class="operate-btns">
-		<button @click="trackAdd" title="在最后面增加轨道">
-			<i class="iconfont icon-blueadd-circle"></i>
-		</button>
-		<button @click="trackLess" title="减少最后一个轨道">
-			<i class="iconfont icon-blueless-circle"></i>
-		</button>
-		<button class="nonebtn" title="剪切" @click.stop.prevent="cutvideo">
-			<i class="iconfont icon-bluecut"></i>
-		</button>
-		<button class="nonebtn" title="删除" @click="deletevideo">
-			<i class="iconfont icon-bluedelete"></i>
-		</button>
-		<button class="nonebtn" title="标记时间点" @click="signBar">
-			<i class="iconfont icon-biaoji"></i>
-		</button>
-		<button class="nonebtn" title="前一个标记" @click="preBar">
-			<i class="iconfont icon-houtui"></i>
-		</button>
-		<button class="nonebtn" title="后一个标记" @click="nextBar">
-			<i class="iconfont icon-qianjin"></i>
-		</button>
-		<button class="nonebtn" title="播放/暂停" @click="videoPlay" >
-			<i class="iconfont" :class="{'icon-bofang': !playNow, 'icon-zanting': playNow}"></i>
-		</button>
-		<el-slider v-model="sliderSec" :min="1" :max="800" @change="drawRuler"></el-slider>
-		<span >{{sliderSec}}秒</span>		
+	<div class="videocontainer">
+	        <div v-for="(item, index) in videoimg" class="video-img" @mousedown.prevent="imgmove(index, item, $event)"
+	        	:class="{ selectImg: index === moveimg }">
+	           <img :src="item.address" :alt="item.altname" class="bigimg" />
+	           <h4>{{ item.title }}</h4>
+	           <img v-if="index === moveimg" :src="item.address" :alt="item.altname" :class="{cursorTo: index === moveimg && upAllowed}"
+	           		:style="'left:'+imgleft+'px;top:'+imgtop+'px;'" class="moveimg" ref="moveImg" />
+	        </div>
 	</div>
-	<div class="timelinebody">
-		<!-- 标尺 -->
-		<div class="ruler-control">
-			<div id="ruler_label" class="ruler_label" @click="sliderLeft = 0;">
-				<div id="ruler_time" class="ng-binding">{{ sectime }}</div>
-			</div>
-			<div class="slider">			
-				<!-- 标记点 -->
-				<div class="signdot" v-for="item in signList" :key="item.id" :style="{left: item.left + 'px'}"></div>
-				<!-- 滑块线 -->
-			    <div id="slider" class="slider_runway" :style="{left: sliderLeft + 'px'}">
-			        <div  class="playhead-top" @mousedown.prevent="sliderMove"></div>
-			        <div class="playhead-line" :style="{height: lineHeight + 'px'}"></div>	       
-			    </div>
-				<div class="divide-line" v-if="absorb" :style="{left: absorbLeft + 'px', height: lineHeight + 'px'}"></div>
-			</div>
+	<div class="cut-tool">
+		<div class="operate-btns">
+			<button @click="trackAdd" title="在最后面增加轨道">
+				<i class="iconfont icon-blueadd-circle"></i>
+			</button>
+			<button @click="trackLess" title="减少最后一个轨道">
+				<i class="iconfont icon-blueless-circle"></i>
+			</button>
+			<button class="nonebtn" title="剪切" @click.stop.prevent="cutvideo">
+				<i class="iconfont icon-bluecut"></i>
+			</button>
+			<button class="nonebtn" title="删除" @click="deletevideo">
+				<i class="iconfont icon-bluedelete"></i>
+			</button>
+			<button class="nonebtn" title="标记时间点" @click="signBar">
+				<i class="iconfont icon-biaoji"></i>
+			</button>
+			<button class="nonebtn" title="前一个标记" @click="preBar">
+				<i class="iconfont icon-houtui"></i>
+			</button>
+			<button class="nonebtn" title="后一个标记" @click="nextBar">
+				<i class="iconfont icon-qianjin"></i>
+			</button>
+			<button class="nonebtn" title="播放/暂停" @click="videoPlay" >
+				<i class="iconfont" :class="{'icon-bofang': !playNow, 'icon-zanting': playNow}"></i>
+			</button>
+			<el-slider v-model="sliderSec" :min="1" :max="800" @change="drawRuler"></el-slider>
+			<span >{{sliderSec}}秒</span>		
 		</div>
-		<!-- 轨道 -->		
-		<trackc v-for="(item, index) in trackNum" :key="item.order" 
-				:track="item" 
-				@showRightMenu="showRightMenu" 
-				:rightNavshow="rightNavNum === item.order"
-				@clickRightMenu="clickRightMenu" 
-				:rightmenu="rightmenu"></trackc>				
-		<div class="track-ruler-container" id="track_ruler">
-			<canvas id="ruler" :width="rulerWidth" :height="rulerHight" style="margin-bottom:3px;"
-					@click="canvasclick"></canvas>	
-			<div class="dragArea" id="dragArea" :style="{ width: trackwidth + 8 + 'px'}">
-				<div class="track_container" :style="{ width: trackwidth + 'px'}"
-					 v-for="(item, index) in trackNum" :key="index"></div>
-				<videoimg v-for="(item, index) in videolist" :key='item.time + index' 
-					@selectVideo="selectVideo(index)" @resize="resize" @dragstart="dragstart"
-					:videoNum="item" :class="{selectedred: index == current}">				
-				</videoimg>	
-				<videoimg  :videoNum="newVideoList" v-if="upAllowed">				
-				</videoimg>	
+		<div class="timelinebody">
+			<!-- 标尺 -->
+			<div class="ruler-control">
+				<div id="ruler_label" class="ruler_label" @click="sliderLeft = 0;">
+					<div id="ruler_time" class="ng-binding">{{ sectime }}</div>				
+				</div>
+				<div class="slider">	
+					<div class="ruler-canvas" ref="rulerCanvas">
+						<canvas id="ruler" :width="rulerWidth" :height="rulerHight" style="margin-bottom:3px;"
+							@click="canvasclick"></canvas>	
+					</div>	
+					<div class="hidescroll"></div>
+					<!-- 标记点 -->
+					<div class="signdot" v-for="item in signList" :key="item.id" :style="{left: item.left + 'px'}"></div>
+					<!-- 滑块线 -->
+				    <div id="slider" class="slider_runway" :style="{left: sliderLeft + 'px'}">
+				        <div  class="playhead-top" @mousedown.prevent="sliderMove"></div>
+				        <div class="playhead-line" :style="{height: lineHeight + 'px'}"></div>	       
+				    </div>
+					<div class="divide-line" v-if="absorb" :style="{left: absorbLeft + 'px', height: lineHeight + 'px'}"></div>
+				</div>
 			</div>
-		</div>		
-	
-    </div>	
-</div>
+			<!-- 轨道 -->	
+			<div class="track-ruler-container" id="track_ruler">
+				<div>
+					<trackc v-for="(item, index) in trackNum" :key="item.order" 
+							:track="item" 
+							:trackwidth="trackwidth"
+							@showRightMenu="showRightMenu" 
+							:rightNavshow="rightNavNum === item.order"
+							@clickRightMenu="clickRightMenu" 
+							:rightmenu="rightmenu"></trackc>
+				</div>				
+				<div class="dragArea" id="dragArea" ref="trackDragArea"
+					style="min-height: 100%;" 
+					:style="{ width: trackwidth + 10 + 'px', height: dragAreaHeight + trackHight+'px'}">
+					<div class="track_container" :style="{ width: trackwidth + 'px'}"
+						v-for="(item, index) in trackNum" :key="index"></div>
+					<videoimg v-for="(item, index) in videolist" :key='item.time + index' 
+						@selectVideo="selectVideo(index)" @resize="resize" @dragstart="dragstart"
+						:videoNum="item" :class="{selectedred: index == current}">				
+					</videoimg>	
+					<videoimg  :videoNum="newVideoList" v-if="upAllowed">				
+					</videoimg>	
+				</div>	
+			</div>
+	    </div>	
+	</div>
 </div>
 </template>
 <script>
@@ -92,7 +98,7 @@ export default {
 		signList: [],
   		imgleft: 0,
   		imgtop: 0,
-  		trackNum: [{
+  		trackNum: [{ //轨道数据
   			order: 1,
   			name: "Track 1",
   			ismask: false
@@ -112,8 +118,8 @@ export default {
 		upAllowed: false,	
 		playNow: false,				
 		videolist: [],
-		newVideoList: {},
-  		tickSize: 35, //一个刻度代表多少px
+		newVideoList: {}, //预览的数据
+  		tickSize: 35, //一个小刻度代表多少px
   		// sectime: "",
   		rulerHight: 42,
   		sliderLeft: 0,  //红线的left
@@ -128,8 +134,8 @@ export default {
 		  },
 		setLeftArr: [],
 		absorb: false,
-		absorbLeft: 0,
-  		sliderSec: 1 //一个刻度代表多少秒
+		absorbLeft: 0, //吸附线的left
+  		sliderSec: 1 //一个大刻度代表多少秒
   	}
   },
   props: {
@@ -142,41 +148,27 @@ export default {
   	"videoimg": VideoImg
   },
   computed: {
-	    rulerWidth () {
+	    rulerWidth () {  //刻度尺宽度
 			let w = Math.ceil((600/this.sliderSec)*this.tickSize)+5,
-				mw = w>1200?w:1200
+				mw = w>1000?w:1000
 			return mw;
 		},
-		time () {
+		time () {  //滑块线所在的地方代表的时间
 			return this.sliderLeft*this.sliderSec/(this.tickSize*2);
 		},
-	  	sectime () {
+	  	sectime () {  //刻度左侧时间显示
 	  		let text = this.secondsToTime(this.time);
 			return [text.hour, text.min, text.sec, text.frame].join(":");
 	  	},
-	  	trackwidth () {
+	  	trackwidth () { //轨道宽度
 	  		return this.rulerWidth - 2;
 	  	},
-	  	dragAreaHeight () {
+	  	dragAreaHeight () { //轨道区域高度
 	  		return (this.trackNum.length - 1) * this.trackHight
 	  	},
-	  	lineHeight () {
+	  	lineHeight () {  //分隔线、滑块线的长度
 	  		return this.trackNum.length * this.trackHight + 10 
 	  	}
-		/*trackVideoTime: {
-			get: function() {
-				let t = [], obj = {track: 1, videolist: []};
-				for (let i = 0; i < this.trackNum; i++) {
-					let obj1 = {...obj};
-					t.push(obj1);
-					obj.track ++;
-				}
-				return t
-			},
-			set: function(newValue) {
-				this.trackNum = newValue.length;
-			}		
-		}*/
   },
   watch: {
 	  sliderSec: function (newsliderSec, oldsliderSec) {
@@ -188,6 +180,7 @@ export default {
       }
   },
   methods: {
+  	//标记打点
 	signBar () {
 		let leftArr = this.signList.filter(item => item.left===this.sliderLeft)
 		if(leftArr.length > 0){
@@ -202,6 +195,7 @@ export default {
 		this.signList.sort(this.compare("left"))
 		console.log("signList:",this.signList)
 	},
+	//排序
 	compare (prop) {
 		return (obj1, obj2) => {
 			let val1 = obj1[prop];
@@ -215,6 +209,7 @@ export default {
 			}         
 		}   
 	},
+	//生成标记的left集合
 	setCancat () {
 		let leftArr1 = this.videolist.map(item => {
 			return item.left
@@ -229,6 +224,7 @@ export default {
 		})
 		console.log("setLeftArr:",this.setLeftArr)
 	},
+	//前一个标记
 	preBar () {		
 		this.setCancat ();
 		let nextIndex = this.setLeftArr.findIndex( item => {
@@ -239,6 +235,7 @@ export default {
 		}
 		this.sliderLeft = this.setLeftArr[nextIndex-1];
 	},
+	// 后一个标记
 	nextBar () {
 		this.setCancat ();
 		let nextIndex = this.setLeftArr.findIndex((item, index) => {
@@ -246,17 +243,19 @@ export default {
 		})
 		this.sliderLeft = this.setLeftArr[nextIndex];
 	},
+	// 播放
 	videoPlay () {
 		this.playNow = !this.playNow;
 		if(this.playNow){
 			clearInterval(this.timer);
 			this.timer = setInterval(() => {
-				this.sliderLeft++;
-			}, 30)			
+				this.sliderLeft += (this.tickSize*2/this.sliderSec)/500;
+			}, 20)			
 		}else{
 			clearInterval(this.timer);  
 		}
 	},
+	// 滑块线运动
 	sliderMove (e) {
 		let odiv = document.getElementById('slider');// 获取目标元素
 		//计算出鼠标相对点击元素的位置,e.clientX获取的是鼠标的位置，OffsetLeft是元素相对于外层元素的位置
@@ -280,6 +279,7 @@ export default {
 			document.onmouseup = null
 		}
 	},
+	// 轨道右侧菜单
   	showRightMenu (order, e) {
   		this.rightNavNum = order;  
   		let oTarget = document.getElementById('dragArea');
@@ -290,28 +290,32 @@ export default {
         	this.rightmenu.left = 0;        	
       };	
   	},
+  	// 轨道右侧菜单点击事件
   	clickRightMenu (track, btn, e) {
+  		let trackIndex = this.trackNum.findIndex((item, index) => {
+				return item.order === track.order;
+		})
   		switch (btn){
   			case 1: {
   				let neworder = this.trackNum.length + 1,
-		  			newname = "Track " + neworder,
+		  			newname = "Track new" + neworder,
 		  			newtrack = {
 			  			order: neworder,
 			  			name: newname,
 			  			ismask: false
 			  		}
-			  	this.trackNum.splice(track.order-1, 0, newtrack);
+			  	this.trackNum.splice(trackIndex, 0, newtrack);
   			}
   			break;
   			case 2: {
   				let neworder = this.trackNum.length + 1,
-		  			newname = "Track " + neworder,
+		  			newname = "Track new" + neworder,
 		  			newtrack = {
 			  			order: neworder,
 			  			name: newname,
 			  			ismask: false
 			  		}
-			  	this.trackNum.splice(track.order, 0, newtrack);
+			  	this.trackNum.splice(trackIndex+1, 0, newtrack);
   			}
   			break;
   			case 3: {
@@ -340,7 +344,7 @@ export default {
   			}
   			break;
   			case 5: {
-  				this.trackNum.splice(track.order-1, 1)
+  				this.trackNum.splice(trackIndex, 1)
   			}
   			break;
   		}
@@ -348,7 +352,7 @@ export default {
   	},
   	trackAdd () {
   		let neworder = this.trackNum.length + 1,
-  			newname = "Track " + neworder,
+  			newname = "Track new" + neworder,
   			newtrack = {
 	  			order: neworder,
 	  			name: newname,
@@ -359,13 +363,14 @@ export default {
   	trackLess () {
   		this.trackNum.pop();
   	},
+  	// 资源拖入
   	imgmove (index, item, e) {  
 		this.moveimg = index;
 	    let odiv = e.target,
 		oTarget = document.getElementById('dragArea'),  
         disX = odiv.getBoundingClientRect().left + 30, 
 		disY = odiv.getBoundingClientRect().top + 20;
-		this.newVideoList = {...item, width: 0, left: 0, top: 0};
+		this.newVideoList = {...item, width: 0, left: 0, top: 0, track:''};
 		document.onmousemove = (e)=>{    
 			this.imgleft = e.clientX - disX;  
 			this.imgtop = e.clientY - disY;			
@@ -385,16 +390,17 @@ export default {
 			document.onmouseup = null;
 		};
 	}, 
+	// 生成剪辑预览
 	dropto (item, e) {
 		let	oTarget = document.getElementById('dragArea'),  
 			topLimit = e.clientY - oTarget.getBoundingClientRect().top,//getBoundingClientRect用于获取某个元素相对于视窗的位置集合。
-			bottomLimit = this.dragAreaHeight,   //放到最下面一个轨道的top值
-			i = Math.round(topLimit/this.trackHight);  //在第几个轨道上
-		if (topLimit >= 0) {
+			i = Math.round(Math.min(topLimit,this.dragAreaHeight)/this.trackHight);  //在第几个轨道上
+		if (topLimit >= 0 && !this.trackNum[i].ismask) {
 			this.upAllowed = true;
 			this.newVideoList.width = (item.time/this.sliderSec)*this.tickSize;
-			this.newVideoList.left = e.clientX - oTarget.getBoundingClientRect().left;
-			this.newVideoList.top = topLimit > bottomLimit ? bottomLimit : this.trackHight*i;			
+			this.newVideoList.left = e.clientX - oTarget.getBoundingClientRect().left;	
+			this.newVideoList.top = this.trackHight*i;	
+			this.newVideoList.track = this.trackNum[i].order;	
 		}else{
 			this.upAllowed = false;
 		}		
@@ -419,9 +425,12 @@ export default {
           document.onmouseup = null;
         };
     },
+    //剪辑拖拽
     dragstart (data, e) {
     	let self = this;
-    	let top = e.clientY - data.top,
+    	let startTop = data.top,
+    		startLeft = data.left,
+    		top = e.clientY - data.top,
     		left = e.clientX - data.left;
     	document.onmousemove = (e)=>{    
 			data.left = e.clientX - left;
@@ -434,27 +443,34 @@ export default {
     		}else if (data.top >= self.dragAreaHeight) {
     			data.top = self.dragAreaHeight;
 			} 
-			let lineArr = this.videolist.map(item => {
+			let lineArr = this.videolist.map(item => {   //所有剪辑的右侧值集合
 				item = item.left + item.width;
 				return item
-			})
-			this.absorb = false;
-			
+			})						
 			let preLine = lineArr.find( item => {				
 				return  Math.abs(data.left - item) < 8
 			})
-			console.log("lineArr:",lineArr,"preLine:",preLine)
+			// console.log("lineArr:",lineArr,"preLine:",preLine)
+			// 吸附线出现判断
 			if(preLine){
 				this.absorbLeft = preLine;
 				this.absorb = true;
 				data.left = preLine;
+			}else{
+				this.absorb = false;
 			}
-			
         };
-        document.onmouseup = (e) => {
-        	let i = Math.round(data.top/self.trackHight)
-			data.top = self.trackHight*i;   
-			this.absorb = false;     	
+        document.onmouseup = (e) => {       
+            let i = Math.round(data.top/self.trackHight); 	
+			data.top = self.trackHight*i;  
+			// 轨道锁定时 
+			if (this.trackNum[i].ismask) {
+				this.notAllowed = true;
+				data.top = startTop;
+				data.left = startLeft;
+			} 
+			this.absorb = false;  
+			this.notAllowed = false;  	
             document.onmousemove = null;
             document.onmouseup = null;
         };
@@ -498,6 +514,7 @@ export default {
   	canvasclick(e){
   		this.sliderLeft = e.offsetX;
   	},
+  	// 时间转换
   	secondsToTime(secs){
   		// calculate time of playhead
 		let milliseconds = secs * 1000,
@@ -524,6 +541,7 @@ export default {
 		}		
 		return scale
 	},
+	// 画标尺
 	drawRuler(){
 		let myCanvas = document.getElementById("ruler"),
 			w = this.rulerWidth,
@@ -573,14 +591,19 @@ export default {
 				this.newVideoList = {};
 			}
 		}
+		// 让标尺的水平滚动跟随轨道滚动
+		let trackArea = this.$refs.trackDragArea,
+			rulerCanvas = this.$refs.rulerCanvas;
+		trackArea.addEventListener('scroll', () => {
+			rulerCanvas.scrollLeft = trackArea.scrollLeft;
+		}, false)
   }
 }
 </script>
 <style scoped lang="stylus" rel="stylesheet">
-	@import '../../assets/css/index.styl'
 	::-webkit-scrollbar {
-	    width: 6px;
-	    height: 6px;
+	    width: 5px;
+	    height: 5px;
 	    background: #000000;
 	}
 	::-webkit-scrollbar-thumb{
@@ -591,7 +614,7 @@ export default {
 		cursor: default!important;
 	}
 	.videocontainer{
-	  height: 250px;
+	  height: 200px;
 	  border: 3px solid #000;
 	  background: #fff;
 	  padding: 5px;
@@ -609,7 +632,7 @@ export default {
 	    }
 	    .moveimg{
 	    	position: absolute;
-	    	z-index:9999;
+	    	z-index:999999;
 			width : 60px;
 			height: 32px;
 			cursor: not-allowed;
@@ -625,7 +648,7 @@ export default {
 	}
 
 	.cut-tool{
-		height: calc(100% - 250px);
+		height: calc(100% - 200px);
 		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(14,14,14,1)), color-stop(100%,rgba(125,126,125,1)));	
 		.operate-btns{
 			height:30px;
@@ -669,20 +692,20 @@ export default {
 		}
 		.timelinebody{
 			padding: 0 5px;
-			height: calc(100% - 30px);
-			overflow: hidden;
+			height: calc(100% - 35px);
+			overflow: hidden;		
 			box-sizing: border-box;
 			position: relative;
 			.track-ruler-container{
-				position: absolute;
-				top: 0;
-				left: 145px;
-				height: calc(100% - 5px);
-				width: calc(100% - 155px);
-				overflow : scroll;				
+				position: relative;
+				height: calc(100% - 48px);
+				width: 100%;
+				overflow: scroll;
+				display: flex;		
 				.dragArea{
-					height : auto ;
 					position: relative;
+					overflow-x: scroll;	
+					overflow-y: hidden;			
 					.selectedred{
 						border-left: 2px solid red!important;
 						border-right: 2px solid red!important;
@@ -729,6 +752,19 @@ export default {
 		}
 		.slider{
 			position: relative;
+			width: calc(100% - 145px);			
+			.ruler-canvas{
+				height:100%;
+				width:100%;
+				overflow-x: scroll;
+			}
+			.hidescroll{
+				width:100%;
+				height:5px;
+				position: absolute;
+				top:48px;
+				background: #2d2626;
+			}
 			.signdot{
 				position: absolute;
 				z-index: 9990;

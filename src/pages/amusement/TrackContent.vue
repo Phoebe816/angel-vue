@@ -3,16 +3,18 @@
 	<div class="track_name" @contextmenu.prevent="showRightMenu(track.order, $event)">
 		<div class="track_top">
 			<div class="track_menu" ></div>
-			<div class="track_label">{{ track.name }}</div> 
+			<div class="track_label">{{ track.name }}</div> 			
 		</div>
+		<i class="locking-track iconfont icon-locking" v-if="track.ismask" 
+			@click="track.ismask=!track.ismask" title="点击解锁轨道"></i>
 		<ul class="rightlist" ref="rightNav" v-if="rightNavshow" :style="rightmenu.top+'px;left:'+rightmenu.left+'px;'">
 			<li @click.stop.prevent = "clickRightMenu(track, item.order, $event)" v-for="(item, index) in rightlist">
-				<i class="iconfont" :class="item.class"></i><span>{{ item.nav }}</span>
+				<i class="iconfont" :class="item.icon"></i>
+				<span>{{ item.nav }}</span>
 			</li>
 		</ul>
-	</div>
-	
-	<div class="track_mask" v-if="track.ismask"></div>
+	</div>	
+	<div class="track_mask" v-if="track.ismask" :style="{width: trackwidth + 'px'}"></div>
 </div>
 </template>
 <script>
@@ -23,23 +25,23 @@ export default {
   		// videoNum: 1
   		rightlist: [{
   			order: 1,
-  			class: 'icon-icon_add',
+  			icon: 'icon-icon_add',
   			nav: "在其上添加轨道"
   		},{
   			order: 2,
-  			class: 'icon-icon_add',
+  			icon: 'icon-icon_add',
   			nav: "在其下添加轨道"	
   		},{
   			order: 3,
-			class: 'icon-rewrite',
+			icon: 'icon-rewrite',
   			nav: "重命名轨道"	
   		},{
   			order: 4,
-  			class: 'icon-locking',
+  			icon: 'icon-locking',
   			nav: "锁定轨道"	
   		},{
   			order: 5,
-  		  	class: 'icon-icon_less',
+  		  	icon: 'icon-icon_less',
   			nav: "删除轨道"		
   		}]
   	}
@@ -56,6 +58,9 @@ export default {
   	 },
   	 rightmenu: {
   	 	type: Object
+  	 },
+  	 trackwidth: {
+  	 	type: Number
   	 }
   	/* videoNum: {
   	 	type: Array
@@ -72,11 +77,10 @@ export default {
 }
 </script>
 <style scoped lang="stylus" rel="stylesheet">
-	@import '../../assets/css/index.styl'
 	.icon-icon_add{
 		color: #6B8E23;
 	}
-	.icon-locking{
+	.icon-locking, .icon-kaisuohuansuo{
 		color: #5F9EA0;
 	}
 	.icon-icon_less{
@@ -118,13 +122,18 @@ export default {
 			    text-shadow: 0 0 10px #ffffff;
 			}
 		}
+		.locking-track{
+			position: absolute;
+			right: 5px;
+			bottom: 5px;
+		}
 		.rightlist {
 			position: absolute;
 			width: 150px;
 			background: #424242;
 			font-size: 12px;
 			box-shadow: 3px 3px 3px #000;
-			z-index: 10001
+			z-index: 100010
 			li{
 				padding: 5px;
 				cursor: default;
@@ -134,8 +143,7 @@ export default {
 				}
 				&:hover{
 					background: #6495ED;
-				}
-				
+				}				
 			}
 		}	
 	}
@@ -162,6 +170,7 @@ export default {
 	    left: 140px;
 	    top: 0;
 	    z-index: 99999;
+	    cursor: not-allowed;
 	}
 
 </style>
