@@ -1,25 +1,26 @@
 <!-- 1、模板 -->
 <template>
   <el-header class="topnav" style = "height: 50px;padding: 0 50px;"> 
-    <div class="nav">
+    <div class="nav" >
       <div class="logo">
         <h1><router-link to="/" title="天使网首页" class="logo"></router-link></h1>     
       </div>      
-      <div class="navbox"> 
+      <div class="navbox" ref="topnavBox"> 
         <span id="diamond" class="diamond"></span>
-        <ul>          
-          <li class="navlist" 
-            :class="{bigsize:current==0 && index==0, changesize:index==current}" 
+        <ul style="overflow:hidden;height:100%;">          
+          <li class="navlist"
+            :class="{bigsize:index===active, changesize:index===current}" 
             v-for="(navtitle, index) of navTitle" 
             :key="navtitle.id"
             :router=navtitle.pathTo
-            @mouseover="diamondMove(index)" @mouseout="diamondMove(0)">
+            @click="active=index"
+            @mouseover="diamondMove(index)" @mouseout="diamondMove(active)">            
             <!-- <span slot="title"> {{ navtitle.name }} </span> -->
             <router-link :to=navtitle.pathTo> {{ navtitle.name }} </router-link>        
           </li>           
         </ul>
       </div> 
-      <el-autocomplete
+      <el-autocomplete ref="autoSelectInput"
         popper-class="query-autocomplete"
         v-model="state3"
         :fetch-suggestions="querySearch"
@@ -131,14 +132,21 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['userInfo','shopCartNum'])
+    ...mapGetters(['userInfo','shopCartNum']),
+    active () {
+      let path = this.$route.path;
+      console.log("path:",path)
+      return this.navTitle.findIndex(item => {
+        return item.pathTo === path;
+      })
+    }
   },
   methods: {
     ...mapActions(['UserLoginOut','ChangeShopCart']),
     diamondMove(index){
       var oDiamond = document.getElementById("diamond");    
       this.current = index;         
-      var Target = oDiamond.offsetWidth*this.current;            
+      var Target = oDiamond.offsetWidth*index;            
       oDiamond.style.left = Target + 'px';       
     },
     handleCommand(command){     
@@ -200,6 +208,7 @@ export default {
   mounted(){   
     this.fetchData();
     this.restaurants = this.loadQuery();
+    this.diamondMove(this.active);
   }
 }
 </script>
@@ -230,17 +239,18 @@ export default {
   background: url("../assets/logo.png") no-repeat;
  }  
  .navbox{  
-  height: 100%;
-  width: 40%;      
+  height: 100%;     
   float: left; 
   position: relative; 
   display: inline-block;
+  margin-right:20px;
+  width: calc(100% - 660px);
  } 
  .navlist{       
   width: 50px;    
   display: inline-block;
   position: relative;
-  text-align: center;   
+  text-align: center; 
  }   
  .diamond{
   position: absolute;
@@ -329,6 +339,6 @@ export default {
   }
 }
 .el-autocomplete{
-  width: 18%;
+  width: 218px;
 }
 </style>

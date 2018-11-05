@@ -9,7 +9,7 @@
 				<el-main class="register-form">			
 					<el-form					
 						:label-position="labelPosition"
-						label-width="80px"
+						label-width="90px"
 						size="medium"
 						ref="register"
 						:model="register"
@@ -23,7 +23,13 @@
 						</el-form-item>
 						<el-form-item prop="password" label="密码">
 							<el-input type="password" v-model="register.password" placeholder="请设置登录密码" class="code-input"></el-input>
-						</el-form-item>									
+						</el-form-item>	
+						<el-form-item prop="password" label="确认密码">
+							<el-input type="password" v-model="register.password" placeholder="请重新输入密码" class="code-input"></el-input>
+						</el-form-item>	
+						<el-form-item prop="email" label="邮箱">
+							<el-input type="email" v-model="register.password" placeholder="请重新输入邮箱" class="code-input"></el-input>
+						</el-form-item>								
 						<!-- <el-form-item prop="smsCode" :rules="rules.required">
 							<el-input v-model="register.smsCode" class="code-input" placeholder="验证码"></el-input>
 							<el-button @click="getCode" :disabled="codeDisabled">{{countdown == 60 ? '免费获取验证码' : '重新发送(' + countdown + ')'}}</el-button>
@@ -113,7 +119,8 @@ export default {
 <style scoped lang="stylus" rel="stylesheet">
 @import '../../assets/css/index.styl'
 .register-container{  
-  width:75%;    
+  width:75%;   
+  max-width : 900px; 
   .register-card{   
     width:100%;   
     border-radius: 8px;     

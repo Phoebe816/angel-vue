@@ -1,14 +1,4 @@
-<template>
-<div>
-	<div class="videocontainer">
-	        <div v-for="(item, index) in videoimg" class="video-img" @mousedown.prevent="imgmove(index, item, $event)"
-	        	:class="{ selectImg: index === moveimg }">
-	           <img :src="item.address" :alt="item.altname" class="bigimg" />
-	           <h4>{{ item.title }}</h4>
-	           <img v-if="index === moveimg" :src="item.address" :alt="item.altname" :class="{cursorTo: index === moveimg && upAllowed}"
-	           		:style="'left:'+imgleft+'px;top:'+imgtop+'px;'" class="moveimg" ref="moveImg" />
-	        </div>
-	</div>
+<template>	
 	<div class="cut-tool">
 		<div class="operate-btns">
 			<button @click="trackAdd" title="在最后面增加轨道">
@@ -75,18 +65,21 @@
 					style="min-height: 100%;" 
 					:style="{ width: trackwidth + 10 + 'px', height: dragAreaHeight + trackHight+'px'}">
 					<div class="track_container" :style="{ width: trackwidth + 'px'}"
-						v-for="(item, index) in trackNum" :key="index"></div>
-					<videoimg v-for="(item, index) in videolist" :key='item.time + index' 
+						v-for="(item, index) in trackNum" :key="index + item.order"></div>
+					<videoimg v-for="(item, index) in videolist" :key='item.id + index' 
 						@selectVideo="selectVideo(index)" @resize="resize" @dragstart="dragstart"
-						:videoNum="item" :class="{selectedred: index == current}">				
+						:videoNum="item" :class="{selectedred: index === current, overlapBg: !item.address, 'move-zIndex': moving === item.id}">				
 					</videoimg>	
-					<videoimg  :videoNum="newVideoList" v-if="upAllowed">				
+					<videoimg  :videoNum="newVideoList" v-if="upAllowed" class="move-zIndex">				
 					</videoimg>	
 				</div>	
 			</div>
+			<!-- 自定义水平滚动条 -->
+			<div class="scroll-horizontal" ref="scrollHorizontal">
+					<div style="height:1px" :style="{ width: trackwidth + 'px'}"></div>
+			</div>
 	    </div>	
 	</div>
-</div>
 </template>
 <script>
 import TrackContent from './TrackContent'
@@ -95,53 +88,50 @@ export default {
   name:'timeline',
   data(){
   	return {
-		signList: [],
-  		imgleft: 0,
-  		imgtop: 0,
-  		trackNum: [{ //轨道数据
-  			order: 1,
-  			name: "Track 1",
-  			ismask: false
-  		},{
-  			order: 2,
-  			name: "Track 2",
-  			ismask: false
-  		},{
-  			order: 3,
-  			name: "Track 3",
-  			ismask: false
-  		},{
-  		  	order: 4,
-  			name: "Track 4",
-  			ismask: false
-		  }],  
-		upAllowed: false,	
-		playNow: false,				
-		videolist: [],
-		newVideoList: {}, //预览的数据
-  		tickSize: 35, //一个小刻度代表多少px
+		signList: [],  		
+		playNow: false,			
   		// sectime: "",
   		rulerHight: 42,
   		sliderLeft: 0,  //红线的left
   		current: -1,
-		moveimg: -1,
 		timer: null,
-  		trackHight: 72,
   		rightNavNum: 0,
   		rightmenu: {
   			top: 0,
   			left: 0
 		  },
-		setLeftArr: [],
+		setLeftArr: [],//标记集合
 		absorb: false,
+		moving: '',
 		absorbLeft: 0, //吸附线的left
-  		sliderSec: 1 //一个大刻度代表多少秒
+		sliderSec: 1 //一个大刻度代表多少秒
   	}
   },
   props: {
-  	 videoimg: {
+  	/*  videoimg: {
   	 	type: Array
-  	 }
+	   } */
+	   videolist: {
+		   type: Array
+	   },
+	   newVideoList: { //预览的数据
+		   type: Object
+	   },
+	   upAllowed: {
+		   type: Boolean
+	   },
+	   trackNum: { //轨道数据
+		   type: Array
+	   },
+	   trackHight: {
+		   type: Number
+	   },
+	   tickSize: {  //一个小刻度代表多少px
+		   type: Number 
+	   },
+	   dragAreaHeight: {
+		   type: Number
+	   }
   },
   components: {
   	"trackc": TrackContent,
@@ -162,22 +152,19 @@ export default {
 	  	},
 	  	trackwidth () { //轨道宽度
 	  		return this.rulerWidth - 2;
-	  	},
-	  	dragAreaHeight () { //轨道区域高度
-	  		return (this.trackNum.length - 1) * this.trackHight
-	  	},
+		  },	 	
 	  	lineHeight () {  //分隔线、滑块线的长度
 	  		return this.trackNum.length * this.trackHight + 10 
 	  	}
   },
   watch: {
-	  sliderSec: function (newsliderSec, oldsliderSec) {
-		this.sliderSec = newsliderSec;
-		this.videolist.forEach(item => {
-			item.width = (item.time/this.sliderSec)*this.tickSize;
-		});
-        this.drawRuler();
-      }
+	    sliderSec: function (newsliderSec, oldsliderSec) {
+			this.sliderSec = newsliderSec;
+			for (let item of this.videolist){
+				item.width = (item.time/this.sliderSec)*this.tickSize;
+			}
+			this.drawRuler();
+		},
   },
   methods: {
   	//标记打点
@@ -211,13 +198,20 @@ export default {
 	},
 	//生成标记的left集合
 	setCancat () {
-		let leftArr1 = this.videolist.map(item => {
-			return item.left
+		let currentData = this.videolist[this.current];
+		let leftTrack = this.videolist.filter(item => {
+			return item.track === currentData.track;
 		})
-		let leftArr2 = this.signList.map(item => {
-			return item.left
+		let leftArr1 = leftTrack.map(item => {
+			return item.left;
 		})
-		let leftArr = [...leftArr1, ...leftArr2];
+		let leftArr2 = leftTrack.map(item => {
+			return item.left + item.width;
+		})
+		let leftArr3 = this.signList.map(item => {
+			return item.left;
+		})
+		let leftArr = [...leftArr1, ...leftArr2, ...leftArr3];
 		this.setLeftArr = Array.from(new Set(leftArr));
 		this.setLeftArr.sort((a, b) => {
 			  return a-b; 
@@ -231,7 +225,11 @@ export default {
 				return item >= this.sliderLeft
 		})
 		if(nextIndex===0){
-			return true
+			this.$message({
+	          message: '前面没有标记了',
+	          type: 'warning'
+	        });
+	        return
 		}
 		this.sliderLeft = this.setLeftArr[nextIndex-1];
 	},
@@ -241,6 +239,13 @@ export default {
 		let nextIndex = this.setLeftArr.findIndex((item, index) => {
 				return item > this.sliderLeft
 		})
+		if(nextIndex < 0){
+			this.$message({
+	          message: '后面没有标记了',
+	          type: 'warning'
+	        });
+	        return
+		}
 		this.sliderLeft = this.setLeftArr[nextIndex];
 	},
 	// 播放
@@ -249,11 +254,24 @@ export default {
 		if(this.playNow){
 			clearInterval(this.timer);
 			this.timer = setInterval(() => {
-				this.sliderLeft += (this.tickSize*2/this.sliderSec)/500;
+				this.sliderLeft += (this.tickSize*2/this.sliderSec)/50;
 			}, 20)			
 		}else{
 			clearInterval(this.timer);  
 		}
+	},
+	// 键盘控制滑块线运动
+	sliderKey (direct) {
+		clearInterval(this.timer);	
+		this.timer = setInterval(() => {
+			if(direct ==='right'){
+				this.sliderLeft++;
+			}else if(this.sliderLeft>0){
+				this.sliderLeft--;
+			}				
+		}, 30)			
+		 
+
 	},
 	// 滑块线运动
 	sliderMove (e) {
@@ -362,49 +380,8 @@ export default {
   	},
   	trackLess () {
   		this.trackNum.pop();
-  	},
-  	// 资源拖入
-  	imgmove (index, item, e) {  
-		this.moveimg = index;
-	    let odiv = e.target,
-		oTarget = document.getElementById('dragArea'),  
-        disX = odiv.getBoundingClientRect().left + 30, 
-		disY = odiv.getBoundingClientRect().top + 20;
-		this.newVideoList = {...item, width: 0, left: 0, top: 0, track:''};
-		document.onmousemove = (e)=>{    
-			this.imgleft = e.clientX - disX;  
-			this.imgtop = e.clientY - disY;			
-			this.dropto(item, e);
-		};
-		document.onmouseup = (e) => {
-			this.moveimg = -1;
-			this.imgleft = 0;
-			this.imgtop = 0;
-			this.upAllowed = false;
-			this.dropto(item, e);
-			if(this.upAllowed){
-				this.videolist.push(this.newVideoList);
-			}			
-			this.upAllowed = false;
-			document.onmousemove = null;
-			document.onmouseup = null;
-		};
-	}, 
-	// 生成剪辑预览
-	dropto (item, e) {
-		let	oTarget = document.getElementById('dragArea'),  
-			topLimit = e.clientY - oTarget.getBoundingClientRect().top,//getBoundingClientRect用于获取某个元素相对于视窗的位置集合。
-			i = Math.round(Math.min(topLimit,this.dragAreaHeight)/this.trackHight);  //在第几个轨道上
-		if (topLimit >= 0 && !this.trackNum[i].ismask) {
-			this.upAllowed = true;
-			this.newVideoList.width = (item.time/this.sliderSec)*this.tickSize;
-			this.newVideoList.left = e.clientX - oTarget.getBoundingClientRect().left;	
-			this.newVideoList.top = this.trackHight*i;	
-			this.newVideoList.track = this.trackNum[i].order;	
-		}else{
-			this.upAllowed = false;
-		}		
-	},
+	},  
+  	//片段宽度拖动
   	resize (data, direct, e) {
     	let disR = e.clientX - data.width, //右边拖动
     		disX = e.clientX + data.width, 
@@ -421,8 +398,9 @@ export default {
         	}          	
         };
         document.onmouseup = (e) => {
-          document.onmousemove = null;
-          document.onmouseup = null;
+			data.time = (data.width/this.tickSize)*(this.sliderSec/2);
+			document.onmousemove = null;
+			document.onmouseup = null;
         };
     },
     //剪辑拖拽
@@ -435,6 +413,7 @@ export default {
     	document.onmousemove = (e)=>{    
 			data.left = e.clientX - left;
 			data.top = e.clientY - top;  
+			this.moving = data.id || '';
     		if (data.left <= 0) {    			
         		 data.left = 0;
     		}	
@@ -443,38 +422,66 @@ export default {
     		}else if (data.top >= self.dragAreaHeight) {
     			data.top = self.dragAreaHeight;
 			} 
-			let lineArr = this.videolist.map(item => {   //所有剪辑的右侧值集合
+			let Leftline = this.videolist.map(item => {   //所有剪辑的右侧值集合
 				item = item.left + item.width;
 				return item
-			})						
-			let preLine = lineArr.find( item => {				
+			}).find( item => {				
 				return  Math.abs(data.left - item) < 8
-			})
-			// console.log("lineArr:",lineArr,"preLine:",preLine)
+			})						
+			let rightLine = this.videolist.map(item => {   //所有剪辑的右侧值集合
+				return item.left
+			}).find( item => {				
+				return  Math.abs(data.left + data.width - item) < 8
+			})						
+			// console.log("Leftline:",Leftline,"rightLine:",rightLine)
 			// 吸附线出现判断
-			if(preLine){
-				this.absorbLeft = preLine;
+			if(Leftline || rightLine){
+				this.absorbLeft = Leftline || rightLine;
 				this.absorb = true;
-				data.left = preLine;
+				data.left = Leftline || rightLine-data.width;
 			}else{
 				this.absorb = false;
 			}
         };
-        document.onmouseup = (e) => {       
-            let i = Math.round(data.top/self.trackHight); 	
-			data.top = self.trackHight*i;  
-			// 轨道锁定时 
-			if (this.trackNum[i].ismask) {
-				this.notAllowed = true;
+        document.onmouseup = (e) => {      
+			let i = Math.round(data.top/self.trackHight); 	
+			this.moving = '';
+			if (this.trackNum[i].ismask) { // 轨道锁定时 
 				data.top = startTop;
 				data.left = startLeft;
-			} 
-			this.absorb = false;  
-			this.notAllowed = false;  	
+			}else{   // 轨道没有锁定时 
+				data.top = self.trackHight*i; 
+				data.track = this.trackNum[i].order;
+				if(data.id){
+					// this.overlap (data);
+				}				
+			}
+			this.absorb = false;  	
             document.onmousemove = null;
             document.onmouseup = null;
         };
-    },
+	},
+	//重叠处理
+	overlap (data) {
+		let overlapList = this.videolist.filter(item => {
+			return item.track === data.track && item.id != data.id;
+		})
+		console.log("overlapList:",overlapList)
+		let L = data.left, R = data.left + data.width;
+		debugger
+		for (let value of overlapList) {
+			let vR = value.width + value.left;
+			if(value.left <= L && vR - L >= 0){
+				let w = Math.min(vR - L, data.width),
+					lap = {left: L, width: w, top: value.top};
+				this.videolist.push(lap);
+			}else if(value.left > L && value.left < R){
+				let w = Math.min(value.width, R - value.left),
+					lap = {left: value.left, width: w, top: value.top};
+				this.videolist.push(lap);
+			}
+		}
+	},
   	selectVideo (index) {
   		this.current = index;
   	},
@@ -482,6 +489,7 @@ export default {
   		this.videolist.splice(this.current, 1);
   		this.current = -1;
   	},
+  	//片段剪切
   	cutvideo () {
   		let index = this.current;
   		if (index < 0) {
@@ -493,28 +501,34 @@ export default {
   		}
   		let	x = this.sliderLeft,
   			origin = this.videolist[index],
-  			newwidth = x - origin.left;
-  			 
-  		if ( newwidth <= 0 || newwidth >= origin.width ) {
+  			newwidth = x - origin.left,
+  			addwidth = origin.width - newwidth,
+  			addData = {...origin};  
+  		if ( newwidth <= 0 || addwidth<=0) {
   			this.$message({
-	          message: '标尺不在剪切范围内',
+	          message: '标尺不在选中片段内',
 	          type: 'warning'
 	        });
 	        return
-		  }	
-		let addwidth = origin.width - newwidth,
-  			addData = {...origin}; 	
+  		}		
   		origin.width = newwidth;
-  		origin.time = (newwidth/this.tickSize)*this.trans;
+		origin.time = (newwidth/this.tickSize)*(this.sliderSec/2);
+		origin.id = this.GenNonDuplicateID(3);
   		addData.left = x;
   		addData.width = addwidth;
-  		addData.time = (addwidth/this.tickSize)*this.trans;
+		addData.time = (addwidth/this.tickSize)*(this.sliderSec/2);
+		addData.id = this.GenNonDuplicateID(3);
   		this.videolist.splice(index, 1, origin);
-  		this.videolist.splice(index+1, 0, addData);
+		this.videolist.splice(index+1, 0, addData);
+		console.log("videolist:",this.videolist)
   	},
   	canvasclick(e){
   		this.sliderLeft = e.offsetX;
-  	},
+	  },
+	//生成id
+	GenNonDuplicateID (randomLength){
+	return Number(Math.random().toString().substr(3,randomLength) + Date.now()).toString(36)
+	},
   	// 时间转换
   	secondsToTime(secs){
   		// calculate time of playhead
@@ -525,23 +539,14 @@ export default {
 		    min = Math.floor(secsint/60) % 60,   //分		
 		    hour = Math.floor(secsint/3600) % 24,   //小时
 		    // frame = Math.round((milli / 1000.0) * 24) + 1;
-		    frame = Math.floor((milli / 1000.0) * 24);
+		    frame = Math.floor((milli / 1000.0) * 25); //1秒等于25帧
 		hour = ("000"+hour).slice(-2);
 		min = ("000"+min).slice(-2);
 		sec = ("000"+sec).slice(-2);
 		// milli = ("000"+milli).slice(-2);
 		frame = ("000"+frame).slice(-2);		
 	    return { "hour":hour, "min":min, "sec":sec, "frame":frame };
-  	},
-	timetext(secs, len){
-		let text = this.secondsToTime(secs), scale = '';
-		if (len === 3) {
-			scale = [text.hour, text.min, text.sec].join(":");
-		} else {
-			scale = [text.hour, text.min, text.sec, text.frame].join(":");
-		}		
-		return scale
-	},
+  	},	
 	// 画标尺
 	drawRuler(){
 		let myCanvas = document.getElementById("ruler"),
@@ -575,6 +580,15 @@ export default {
 			}	
 		}
 		c.stroke();
+	},
+	timetext(secs, len){
+		let text = this.secondsToTime(secs), scale = '';
+		if (len === 3) {
+			scale = [text.hour, text.min, text.sec].join(":");
+		} else {
+			scale = [text.hour, text.min, text.sec, text.frame].join(":");
+		}		
+		return scale
 	}
   },
   mounted(){
@@ -591,12 +605,31 @@ export default {
 				this.videolist.push(this.newVideoList);
 				this.newVideoList = {};
 			}
+			if(e.keyCode === 37 || e.keyCode ===40){
+				/* if(this.sliderLeft>0){
+					this.sliderLeft--;
+				} */
+				clearInterval(this.timer); 
+			}
+			if(e.keyCode === 38 || e.keyCode ===39){					
+				// this.sliderLeft++;	
+				clearInterval(this.timer); 		
+			}
+		}
+		document.onkeydown = (e) => {
+			if(e.keyCode === 37 || e.keyCode ===40){
+				this.sliderKey('left');
+			}
+			if(e.keyCode === 38 || e.keyCode ===39){					
+				this.sliderKey('right');	
+			}
 		}
 		// 让标尺的水平滚动跟随轨道滚动
-		let trackArea = this.$refs.trackDragArea,
-			rulerCanvas = this.$refs.rulerCanvas;
-		trackArea.addEventListener('scroll', () => {
-			rulerCanvas.scrollLeft = trackArea.scrollLeft;
+		let scrollHorizontal = this.$refs.scrollHorizontal;
+		scrollHorizontal.addEventListener('scroll', () => {
+			this.$refs.trackDragArea.scrollLeft = scrollHorizontal.scrollLeft;
+			this.$refs.rulerCanvas.scrollLeft = scrollHorizontal.scrollLeft;
+
 		}, false)
   }
 }
@@ -611,42 +644,7 @@ export default {
 		background: #4b92ad;
 		border-radius: 8px;
 	}
-	.cursorTo{
-		cursor: default!important;
-	}
-	.videocontainer{
-	  height: 200px;
-	  border: 3px solid #000;
-	  background: #fff;
-	  padding: 5px;
-	  position: relative;
-	  .video-img{
-	    width: 150px;
-	    border: 1px solid #ccc;
-	    background: #E0FFFF;
-	    position: relative;
-	    display: inline-block;
-	    margin: 5px;
-	    .bigimg{
-	      width: 100%;
-	      height: 120px;
-	    }
-	    .moveimg{
-	    	position: absolute;
-	    	z-index:999999;
-			width : 60px;
-			height: 32px;
-			cursor: not-allowed;
-	    }
-	    h4{
-	      margin: 0;
-	      font-size: 12px;
-	    }
-	  }
-	  .selectImg{
-		border: 1px solid #f00;
-	  }
-	}
+	
 
 	.cut-tool{
 		height: calc(100% - 200px);
@@ -730,6 +728,15 @@ export default {
 					}
 				}
 				
+			}
+			.scroll-horizontal{
+					position : absolute;
+					bottom: 0;
+					left: 145px;
+					width: calc(100% - 155px);
+					height: 6px;
+					z-index: 99999;
+					overflow-x: scroll;
 			}
 		}
 	}
