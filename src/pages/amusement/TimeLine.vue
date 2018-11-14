@@ -247,6 +247,7 @@ export default {
 	        return
 		}
 		this.sliderLeft = this.setLeftArr[nextIndex];
+		// if(this.setLeftArr[nextIndex]>)
 	},
 	// 播放
 	videoPlay () {

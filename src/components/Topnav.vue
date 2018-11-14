@@ -13,7 +13,7 @@
             v-for="(navtitle, index) of navTitle" 
             :key="navtitle.id"
             :router=navtitle.pathTo
-            @click="active=index"
+            @click="active=index;"
             @mouseover="diamondMove(index)" @mouseout="diamondMove(active)">            
             <!-- <span slot="title"> {{ navtitle.name }} </span> -->
             <router-link :to=navtitle.pathTo> {{ navtitle.name }} </router-link>        
@@ -121,9 +121,11 @@ export default {
         { name: "旅游", pathTo: "/tour", id:"tourPage"},             
         { name: "互助", pathTo: "/mutualaid", id:"mutualAidPage"},
         { name: "阅读", pathTo: "/read", id:"read"},
-        { name: "娱乐", pathTo: "/amusement", id:"amusement"}        
+        { name: "娱乐", pathTo: "/amusement", id:"amusement"},
+        { name: "宣管", pathTo: "/dypropaganda", id:"propaganda"}     
       ],
       current: 0,
+      active: 0,
       shopCartCount:0,
       messageData:[],
       visiblity:false,
@@ -131,15 +133,16 @@ export default {
       state3: ''   
     }
   },
-  computed: {
-    ...mapGetters(['userInfo','shopCartNum']),
-    active () {
-      let path = this.$route.path;
-      console.log("path:",path)
-      return this.navTitle.findIndex(item => {
-        return item.pathTo === path;
-      })
+  watch:{
+    $route(to,from){
+      this.active = this.navTitle.findIndex(item => {
+        return item.pathTo === to.path;
+      });
+      this.diamondMove(this.active);
     }
+  },
+  computed: {
+    ...mapGetters(['userInfo','shopCartNum'])
   },
   methods: {
     ...mapActions(['UserLoginOut','ChangeShopCart']),
@@ -207,8 +210,7 @@ export default {
   },
   mounted(){   
     this.fetchData();
-    this.restaurants = this.loadQuery();
-    this.diamondMove(this.active);
+    this.restaurants = this.loadQuery();  
   }
 }
 </script>
@@ -279,13 +281,26 @@ export default {
   transition: font 0.5s;
   -webkit-transition: font 0.5s; /* Safari */ 
   &:hover{
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
   } 
  }
  .bigsize{
   font-size: 20px;
   font-weight: bold;    
+ }
+ .bigsize::before{  
+   content:"";
+   background: url("../assets/img/diamonds.png") no-repeat; 
+  opacity:0.3;  
+  -moz-opacity:0.3;
+  -khtml-opacity: 0.3;
+  z-index: -1;
+  width:50px;
+  height:48px;
+  position:absolute;
+  top:0;
+  left:0;
  }
  .messageText{
   line-height 48px

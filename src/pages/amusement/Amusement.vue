@@ -1,5 +1,5 @@
 <template>
-<el-main style="margin-top:40px">
+<el-main>
   <el-container>
       <el-aside width="150px">
         <asidemenu :iconclass="iconclass" 
@@ -11,14 +11,14 @@
       
       </el-main>
   </el-container>    
-  <timeline style="height: 600px;margin: 20px 0;"></timeline>  
+  <!-- <timeline style="height: 600px;margin: 20px 0;"></timeline>   -->
 </el-main>
 </template>
 <script>
 
 import AsideMenu from '@/components/AsideMenu'
 import Music from './Music.vue'
-import TimeLine from './TimeLine'
+// import TimeLine from './TimeLine'
 
 export default {
 	data() {
@@ -48,7 +48,7 @@ export default {
     components:{
       "asidemenu":AsideMenu,
    		"music": Music,
-      "timeline": TimeLine
+      // "timeline": TimeLine
     },
     methods: {
       

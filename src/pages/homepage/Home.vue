@@ -9,7 +9,7 @@
         
       </el-main>
     </el-container> 
-    <photowall></photowall>
+    <!-- <photowall></photowall> -->
     <el-container>
     </el-container>
   </el-main>

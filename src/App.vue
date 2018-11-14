@@ -6,8 +6,13 @@
     </template>
     <template v-else-if="$route.meta.homePages">
       <Nav></Nav>
-      <router-view></router-view>
+      <router-view style="margin-top:40px"></router-view>
       <!-- <Footer></Footer> -->
+    </template>  
+    <template v-else-if="$route.meta.webapp">
+      <webappHeader></webappHeader>
+      <router-view style="margin-top:65px"></router-view>
+      <Footer></Footer>
     </template>  
     <!-- 下面展示登录之后的内容   v-else-if="$route.fullPath != '/'"解决主页一闪而过的现象-->
     <template v-else-if="$route.meta.info">   
@@ -32,14 +37,17 @@
 import Nav from '@/components/Topnav'
 import Header from '@/components/Header'
 import Menu from '@/components/Menu'
-
+import webappHeader from '@/components/dyPropaganda/webappHeader'
+import Footer from '@/components/dyPropaganda/Footer'
 
 export default {
   name: 'App',
   components: {
     Nav,
     Header,
-    Menu
+    Menu,
+    webappHeader,
+    Footer
   },
   computed:{
     activeQuery(){
