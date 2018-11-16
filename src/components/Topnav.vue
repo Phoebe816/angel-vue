@@ -33,6 +33,7 @@
         </template>
         <el-button slot="append" icon="el-icon-search" @click="handleIconClick"></el-button>
       </el-autocomplete>
+      <!-- 登录后展示 -->
       <ul class="login-menu" v-if="userInfo">
         <li>
           <el-dropdown @command="handleCommand">
@@ -95,6 +96,7 @@
           </el-popover>
         </li>
       </ul>
+      <!-- 未登录展示 -->
       <ul class="usermsg" v-else>   
            <li class="userlist grey">
               <router-link to="/login" id="loginIn" class="system">登录</router-link>

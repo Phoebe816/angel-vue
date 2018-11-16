@@ -31,8 +31,9 @@ new Vue({
   router,
   store,
   el: '#app',
-  /*components: { App },
+  /*components: {'component-a': ComponentA },
   template: '<App/>',*/
-  render: h => h(App)
+  //components: { App }  vue1.0的写法
+  render: h => h(App) //渲染视图
 })
 //index.html->main.js->App.vue
